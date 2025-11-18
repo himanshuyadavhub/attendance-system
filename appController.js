@@ -1,5 +1,7 @@
 const bcrypt = require("bcryptjs");
 const QRCode = require('qrcode');
+const fetch = require('node-fetch');
+const geolib = require('geolib');
 
 const Admin = require("./models/Admin");
 const Attendance = require("./models/Attendance");
@@ -7,97 +9,22 @@ const Student = require("./models/Student");
 const Courses = require("./models/Courses");
 const Classes = require("./models/Classes");
 
-const CLASS_DURATION = 10*60*1000;   // 10 Minutes
+const thresholdDistance = 50000;
+const CLASS_DURATION = 10 * 60 * 1000;   // 10 Minutes
 // const QR_VALID = 50*60*1000;    // 50 Minutes
 
-exports.landing_page = (req, res) => {
+exports.getlandingPage = (req, res) => {
   res.render("home");
 };
 
-// Admin Login:
-exports.adminLoginPost = async (req, res) => {
-  const { Id, password } = req.body;
-  const admin = await Admin.findOne({ Id });
-
-  if (!admin) {
-    req.session.error = "Invalid Credentials";
-    return res.redirect("/");
-  };
-
-  const isMatch = await bcrypt.compare(password, admin.password);
-
-  if (!isMatch) {
-    req.session.error = "Invalid Credentials";
-    return res.redirect("/");
-  }
-
-  // req.session.isAuth = true;
-  req.session.Id = admin.Id;
-  req.session.program = admin.program;
-  req.session.isAdmin = true;
-
-  res.redirect("/admin-panel");
-
-};
-
-exports.adminLoginGet = async (req, res) => {
-  const id = req.session.Id;
-  const program = req.session.program;
-
-  const coursesList = await Courses.find({ program }, { _id: 0 });
-
-  res.render("adminPanel", { Id: id, program: program, coursesList });
-};
-
-// Generate and Save QR:
-exports.qrCodePost = (req, res) => {
-  const { course_id, section } = req.body;
-  const program = req.session.program;
-  req.session.course_id = course_id;
-  req.session.section = section;
-
-  const timeStamp = Date.now();
-  const text = `http://localhost:5000/updating?course_id=${course_id}&section=${section}&program=${program}&time=${timeStamp}`;
-
-  // Generate QR code
-  QRCode.toDataURL(text, (err, url) => {
-    if (err) {
-      res.status(500).send('Internal Server Error');
-    } else {
-
-      res.render("qrcode", { qrurl: url, course_id, section, program });
-    }
-  });
-};
-
-exports.saveQR = async (req, res) => {
-  try {
-    const course_id = req.session.course_id;
-    const program = req.session.program;
-    const section = req.session.section;
-
-    let currentClass = new Classes({
-      program,
-      course_id,
-      section,
-    });
-
-    await currentClass.save();
-    res.status(200).send('Class marked successfully.');
-  } catch (error) {
-    console.error('Error saving class:', error);
-    res.status(500).send('Internal Server Error');
-  }
-};
-
-// REgister Account:
-exports.register_get = (req, res) => {
+// Register Account:
+exports.getRegister = (req, res) => {
   const error = req.session.error;
   delete req.session.error;
   res.render("register", { err: error });
 };
 
-exports.register_post = async (req, res) => {
+exports.postRegister = async (req, res) => {
 
   if (req.body.userType === "admin") {
     const { program, Id, password } = req.body;
@@ -152,14 +79,97 @@ exports.register_post = async (req, res) => {
       res.send(error)
     }
   }
-
-
   res.redirect("/");
 };
 
 
+// Admin Login:
+exports.adminLoginPost = async (req, res) => {
+  const { Id, password } = req.body;
+  const admin = await Admin.findOne({ Id });
+
+  if (!admin) {
+    req.session.error = "Invalid Credentials";
+    return res.redirect("/");
+  };
+
+  const isMatch = await bcrypt.compare(password, admin.password);
+
+  if (!isMatch) {
+    req.session.error = "Invalid Credentials";
+    return res.redirect("/");
+  }
+
+  // req.session.isAuth = true;
+  req.session.Id = admin.Id;
+  req.session.program = admin.program;
+  req.session.isAdmin = true;
+
+  res.redirect("/admin-panel");
+
+};
+
+exports.adminLoginGet = async (req, res) => {
+  const id = req.session.Id;
+  const program = req.session.program;
+
+  const coursesList = await Courses.find({ program }, { _id: 0 });
+
+  res.render("adminPanel", { Id: id, program: program, coursesList });
+};
+
+// Generate and Save QR:
+exports.generateQrCode = async(req, res) => {
+  const { course_id, section } = req.body;
+  const program = req.session.program;
+  req.session.course_id = course_id;
+  req.session.section = section;
+
+  const url = `https://api.ipapi.com/api/check?access_key=2e45fcc1ab9ff16293bae6c073b79842&fields=latitude,longitude`
+
+  const response = await fetch(url);
+  const location = await response.json();
+  console.log(`From Backend ${location.latitude}, ${location.longitude}`);
+  
+
+  const timeStamp = Date.now();
+  const text = `http://localhost:5000/updating?course_id=${course_id}&section=${section}&program=${program}&time=${timeStamp}&qrLatitude=${location.latitude}&qrLongitude=${location.longitude}`;
+
+  // Generate QR code
+  QRCode.toDataURL(text, (err, url) => {
+    if (err) {
+      res.status(500).send('Internal Server Error');
+    } else {
+
+      res.render("qrcode", { qrurl: url, course_id, section, program });
+    }
+  });
+};
+
+exports.saveQR = async (req, res) => {
+  try {
+    const course_id = req.session.course_id;
+    const program = req.session.program;
+    const section = req.session.section;
+
+    let currentClass = new Classes({
+      program,
+      course_id,
+      section,
+    });
+
+    await currentClass.save();
+    res.status(200).send('Class marked successfully.');
+  } catch (error) {
+    console.error('Error saving class:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+
+
 // Login STUDENT ACCOUNT:
-exports.student_post = async (req, res) => {
+exports.studentPost = async (req, res) => {
   const { admissionNo, password } = req.body;
   delete req.session.error;
   let student = await Student.findOne({ AdmissionNo: admissionNo });
@@ -187,7 +197,7 @@ exports.student_post = async (req, res) => {
   res.redirect("/studentDashboard");
 };
 
-exports.student_get = async (req, res) => {
+exports.studentGet = async (req, res) => {
   const profile = req.session.profile;
 
   let courses = await Courses.find({ program: profile.program }, { _id: 0 });
@@ -205,54 +215,69 @@ exports.student_get = async (req, res) => {
 };
 
 // Update Attendance:
-exports.update = async (req, res) => {
+exports.markAttendance = async (req, res) => {
   const admissionNo = req.session.profile.admissionNo;
   const userSection = req.session.profile.section;
   const userProgram = req.session.profile.program;
-  const { course_id, section, program ,timeStamp} = req.query;
+  const { course_id, section, program, timeStamp, qrLatitude, qrLongitude } = req.query;
+  const {latitude, longitude} = req.body;
+
+
+  const distance = geolib.getDistance(
+    {latitude: qrLatitude, longitude: qrLongitude},
+    { latitude: latitude, longitude: longitude }
+  );
+  console.log(`distance ${distance}`);
 
   if (userProgram !== program) {
     req.session.error = "QR is not for your program!";
-    res.redirect("/studentDashboard")
+    return res.redirect("/studentDashboard")
   };
 
   if (userSection !== section) {
     req.session.error = "Section doesn't match!";
-    res.redirect("/studentDashboard")
+    return res.redirect("/studentDashboard")
   };
 
   let totalClasses = await Classes.count({ program, section, course_id });
-  let count = await Attendance.count({ AdmissionNo: admissionNo, course_id, program });
+  let previousAttendance = await Attendance.findOne({ AdmissionNo: admissionNo, course_id }, { presentDates: 1 , _id: 0});
 
-  let recentRecord = await Attendance.findOne({ AdmissionNo: admissionNo }, { date: 1, _id: 0 }).sort({ date: -1 });
-  let recentRecDate = recentRecord.date;
-  let currentDate = new Date();
-  let currentTime = currentDate.getTime();
-  
 
-  if (totalClasses <= count) {
+  if (!totalClasses) {
     req.session.error = "Attendance Overloaded!";
-    res.redirect("/studentDashboard")
+    return res.redirect("/studentDashboard")
+  }
 
-  } else if (currentDate - recentRecDate < CLASS_DURATION || currentTime - timeStamp > CLASS_DURATION) {
-    req.session.error = "QR INVALID!.";
-    res.redirect("/studentDashboard")
+  if(distance > thresholdDistance){
+    req.session.error = "Not present near the QR code/Class";
+    return res.redirect("/studentDashboard");
+  }
 
-  } else {
+  if (previousAttendance) {
+    let previousAttendanceDates = previousAttendance.presentDates;
+    let lastPresent = previousAttendanceDates[previousAttendanceDates.length - 1];
 
+
+    if (new Date() - lastPresent < CLASS_DURATION || (new Date()).getTime() - timeStamp > CLASS_DURATION) {
+      req.session.error = "QR INVALID!.";
+      return res.redirect("/studentDashboard")
+    }
+
+    await Attendance.updateOne({ AdmissionNo: admissionNo, course_id: course_id }, { $push: { presentDates: new Date() } });
+  }
+
+  if (!previousAttendance) {
     let attendance = new Attendance({
       AdmissionNo: admissionNo,
-      program,
-      course_id,
-      section,
-      isPresent: true
+      course_id: course_id,
+      presentDates: [new Date()]
     })
 
     await attendance.save();
-    delete req.session.error;
-    res.redirect("/studentDashboard")
   }
 
+  delete req.session.error;
+  return res.redirect("/studentDashboard")
 };
 
 // View Attendance:

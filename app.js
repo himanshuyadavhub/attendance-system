@@ -35,30 +35,30 @@ app.use(express.static(path.join(__dirname,'public')))
 // Routes:
 
 // Landing Page
-app.get("/", appController.landing_page);
+app.get("/", appController.getlandingPage);
 
 // Register Page
-app.get("/register", appController.register_get);
-app.post("/register", appController.register_post);
+app.get("/register", appController.getRegister);
+app.post("/register", appController.postRegister);
 
-// Admin Panel:
+// Admin Login and Panel:
 app.post("/admin-panel",appController.adminLoginPost);
 app.get("/admin-panel",isAdmin,appController.adminLoginGet);
 
 // Generate QR code:
-app.post("/qrcode",isAdmin,appController.qrCodePost);
+app.post("/qrcode",isAdmin,appController.generateQrCode);
 app.post("/saveQR",appController.saveQR);
 
 // VIEW RECORD:
 app.get("/attendancerecord",isAdmin,appController.viewAttendance);
 
 
-// STUDENT ACCOUNT DASHBOARD:
-app.post("/studentDashboard",appController.student_post);
-app.get("/studentDashboard",isStudent,appController.student_get)
+// STUDENT ACCOUNT DASHBOARD AND LOGIN:
+app.post("/studentDashboard",appController.studentPost);
+app.get("/studentDashboard",isStudent,appController.studentGet)
 
 // UPDATE ATTENDANCE RECORD:
-app.post("/updating",isStudent,appController.update);
+app.post("/updating",isStudent,appController.markAttendance);
 
 // LOGOUT:
 app.post("/logout",appController.logOut);

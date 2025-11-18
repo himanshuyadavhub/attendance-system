@@ -50,7 +50,7 @@
                             <%=courses[i].courseId%>
                         </td>
                         <td>
-                           <%=attendance[courses[i].courseId]%>/<%=totalClasses[courses[i].courseId]%>
+                            <%=attendance[courses[i].courseId]%>/<%=totalClasses[courses[i].courseId]%>
                         </td>
 
                     </tr>
@@ -64,12 +64,38 @@
         <button id="logoutButton">Logout</button>
 
     </div>
-    
+
     <div id="videoContainer" width="300px"></div>
     <div id="resultScan"></div>
 
     <script>
-        document.getElementById('scanButton').addEventListener('click', function () {
+
+        function fetchLocation() {
+            return new Promise((resolve, reject) => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function (position) {
+                            const latitude = position.coords.latitude;
+                            const longitude = position.coords.longitude;
+                            resolve({ latitude, longitude });
+                        },
+                        function (error) {
+                            reject('Error fetching geolocation: ' + error.message);
+                        }
+                    );
+                } else {
+                    reject('Geolocation is not supported by this browser.');
+                }
+            });
+        }
+
+     
+
+        
+        // Event Listeners for the buttons
+
+        document.getElementById('scanButton').addEventListener('click', async function () {
+            
             let Scanner = new Html5QrcodeScanner("videoContainer",
                 {
                     fps: 10,
@@ -77,20 +103,37 @@
                 },
   /* verbose= */ false);
 
-            function onScanSuccess(result) {
-                // handle the scanned code as you like, for example:
+            async function onScanSuccess(result) {
+                // handle the scanned code
                 <!-- console.log(`Code matched = `, result); -->
                 document.getElementById("resultScan").innerHTML = `<a href="${result}">${result}</a>`;
 
                 Scanner.clear();
                 document.getElementById("videoContainer").remove();
+
+                let location = await fetchLocation();
+                console.log('From Frontend',location);
                 var myForm = document.createElement("form");
-                myForm.action = result;// the href of the link
+                myForm.action = result;
                 myForm.method = "POST";
+
+                var latitudeInput = document.createElement("input");
+                latitudeInput.type = "hidden";
+                latitudeInput.name = "latitude";
+                latitudeInput.value = location.latitude;
+
+                var longitudeInput = document.createElement("input");
+                longitudeInput.type = "hidden";
+                longitudeInput.name = "longitude";
+                longitudeInput.value = location.longitude;
+
+                // Append the hidden inputs to the form
+                myForm.appendChild(latitudeInput);
+                myForm.appendChild(longitudeInput);
 
                 document.body.appendChild(myForm);
                 myForm.submit();
-                
+
             }
 
             function onScanFailure(error) {
@@ -100,21 +143,22 @@
             Scanner.render(onScanSuccess, onScanFailure);
         });
 
-        document.getElementById('logoutButton').addEventListener('click',function(){
+        document.getElementById('logoutButton').addEventListener('click', function () {
             fetch('/logout', {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 }
-              })
-              .then(response => {
-                if (response.ok) {
-                  window.location.href = '/';
-                } else {
-                  alert('Logout failed.');
-                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/';
+                    } else {
+                        alert('Logout failed.');
+                    }
+                })
         })
-    })
     </script>
 </body>
+
 </html>
