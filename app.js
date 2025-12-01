@@ -4,7 +4,10 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 const config = require("config");
 
-const appController = require("./appController");
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+
 const isStudent = require("./middleware/is-student");
 const isAdmin = require("./middleware/is-admin");
 
@@ -19,7 +22,7 @@ const store = new MongoDBStore({
   collection: "mySessions",
 });
 
-app.set("view engine", "ejs");
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   session({
@@ -35,33 +38,26 @@ app.use(express.static(path.join(__dirname,'public')))
 // Routes:
 
 // Landing Page
-app.get("/", appController.getlandingPage);
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'views', 'home.html'));
+});
 
-// Register Page
-app.get("/register", appController.getRegister);
-app.post("/register", appController.postRegister);
-
-// Admin Login and Panel:
-app.post("/admin-panel",appController.adminLoginPost);
-app.get("/admin-panel",isAdmin,appController.adminLoginGet);
-
-// Generate QR code:
-app.post("/qrcode",isAdmin,appController.generateQrCode);
-app.post("/saveQR",appController.saveQR);
-
-// VIEW RECORD:
-app.get("/attendancerecord",isAdmin,appController.viewAttendance);
+app.use("/user", userRoutes);
+app.use("/admin", adminRoutes);
+app.use("/student", studentRoutes);
 
 
-// STUDENT ACCOUNT DASHBOARD AND LOGIN:
-app.post("/studentDashboard",appController.studentPost);
-app.get("/studentDashboard",isStudent,appController.studentGet)
-
-// UPDATE ATTENDANCE RECORD:
-app.post("/updating",isStudent,appController.markAttendance);
 
 // LOGOUT:
-app.post("/logout",appController.logOut);
+app.post("/logout",(req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.log(err)
+    }
+  })
+
+  res.status(200).json({ message: "Logged out successfully" });
+});
 
 
 

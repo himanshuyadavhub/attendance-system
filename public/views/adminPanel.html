@@ -5,27 +5,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="/css/adminPanel.css" type="text/css">
+    <link rel="stylesheet" href="../css/adminPanel.css" type="text/css">
 
 
 </head>
 
 <body>
     <div class="container">
-        <select id="toView">
+        <select id="actionSelect">
             <option value="generateQR" selected>Generate QR code</option>
             <option value="ViewAttendance">View Attendance</option>
         </select>
 
         <div id="GenerateQR">
-            <form action="/qrcode" method="post">
+            <form onsubmit="handleQrCodeGenerateFormSubmit(event)" method="post">
                 <h3>Generate QR code:</h3>
-                <label for="course_id">Select course:</label>
-                <select id="course_id" name="course_id">
+                <label for="courseId">Select course:</label>
+                <select id="courseId" name="courseId">
                     <option selected>--Select course name--</option>
-                    <% coursesList.forEach(ele=> { %>
-                        <option value="<%=ele.courseId%>"><%=ele.courseName%></option>
-                    <% }) %>
+                    <option value="C1">Course 1</option>
+                    <option value="C2">Course 2</option>
+                    <option value="C3">Course 3</option>
+                    <option value="C4">Course 4</option>
+                    <option value="C5">Course 5</option>
+
                 </select><br>
 
                 <label for="section">Select section:</label>
@@ -42,14 +45,18 @@
         </div>
 
         <div class="hidden" id="ViewAttendance">
-            <form action="attendancerecord" method="get">
+            <form onsubmit="handleViewAttendanceFormSubmit(event)" method="get">
                 <h3>View attendance for</h3>
-                <label for="course_id">Select course:</label>
-                <select id="course_id" name="course_id">
+                <label for="courseId">Select course:</label>
+                <select id="courseId" name="courseId">
                     <option selected>--Select course name--</option>
-                    <% coursesList.forEach(ele=> { %>
-                        <option value="<%=ele.courseId%>"><%=ele.courseName%></option>
-                    <% }) %>
+                    <option selected>--Select course name--</option>
+                    <option value="C1">Course 1</option>
+                    <option value="C2">Course 2</option>
+                    <option value="C3">Course 3</option>
+                    <option value="C4">Course 4</option>
+                    <option value="C5">Course 5</option>
+
                 </select><br>
 
                 <label for="section">Select section:</label>
@@ -69,20 +76,9 @@
             <button class="logout">Logout</button>
         </form>
     </div>
-
-    <script>
-        document.getElementById('toView').addEventListener('change', function () {
-            var toView = this.value;
-            console.log(this.value);
-            if (toView === "generateQR") {
-                document.getElementById("ViewAttendance").classList.add('hidden');
-                document.getElementById("GenerateQR").classList.remove('hidden');
-            } else if (toView === "ViewAttendance") {
-                document.getElementById("ViewAttendance").classList.remove('hidden');
-                document.getElementById("GenerateQR").classList.add('hidden');
-            }
-        });       
-    </script>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"></script>
+<script src="../js/adminPanel.js"></script>
+
 
 </html>

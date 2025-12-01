@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Attendance</title>
+    <link rel="stylesheet" href="../css/attendanceRecords.css" type="text/css">
+
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="details" id="classDetails">
+        </div>
+
+        <h4 style="text-align: right;" id="totalClasses"></h4>
+
+        <div class="records" id="records">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Admission Number</th>
+                        <th>Student Name</th>
+                        <th>Attended</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <button id="logoutButton" onclick="logout()">Logout</button>
+        </div>
+
+    </div>
+
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"></script>
+<script src="../js/attendanceRecord.js"></script>
+
+</html>

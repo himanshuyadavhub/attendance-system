@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="../css/student_dashboard.css" type="text/css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+
+<body>
+    <div class="profile-container">
+        <div class="profile-info">
+            <h4 id="studentName"></h4>
+            <h4 id="studentAdmissionNo"></h4>
+        </div>
+        <div class="admission-info">
+            <h4 id="studentProgram"></h4>
+            <h4 id="studentSection"></h4>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr style="height: 50px;">
+                    <th>Sr No</th>
+                    <th>Course Name</th>
+                    <th>Course Id</th>
+                    <th>Attendance</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceTableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div class="actions">
+        <button id="scanButton">Scan</button>
+        <button id="logoutButton">Logout</button>
+
+    </div>
+
+    <div id="videoContainer" width="300px"></div>
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"></script>
+<script src="../js/studentDashboard.js"></script>
+</html>

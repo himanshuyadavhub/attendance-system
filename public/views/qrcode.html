@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR CODE</title>
+    <link rel="stylesheet" href="/css/qrcode.css" type="text/css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="details" id="qrDetails">
+        </div>
+
+        <div class="qrimg">
+            <h4 style="text-align: center;">Scan this QR code:</h4>
+            <img class="qrcode" id="qrcode" alt="secret image" />
+        </div>
+
+        <div class="actions">
+            <button id="logout" onclick="logout()">Logout</button>
+        </div>
+
+    </div>
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"></script>
+<script src="../js/qrcode.js"></script>
+
+</html>

@@ -14,6 +14,10 @@ const classesSchema = new Schema({
         type:String,
         required:true
     },
+    qrUrl:{
+        type:String,
+        required:true
+    },
     dateAndTime:{
         type:Date,
         required:true,

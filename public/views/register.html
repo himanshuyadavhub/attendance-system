@@ -18,7 +18,7 @@
     </select>
 
     <div  id="studentForm">
-      <form action="/register" method="POST">
+      <form onsubmit="handleStudentFormSubmit(event)">
         <div class="input-group">
           <input type="hidden" name="userType" value="student" required>
           <input type="text" name="program" placeholder="Program Name" required><br>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="hidden" id="adminForm">
-      <form action="/register" method="POST">
+      <form onsubmit="handleAdminFormSubmit(event)">
 
         <div class="input-group">
           <input type="hidden" name="userType" value="admin">
@@ -53,19 +53,7 @@
 
       </form>
     </div>
-
-    <script>
-      document.getElementById('userTypeSelect').addEventListener('change', function () {
-        var userType = this.value;
-        if (userType === 'student') {
-          document.getElementById('studentForm').classList.remove('hidden');
-          document.getElementById('adminForm').classList.add('hidden');
-        } else if (userType === 'admin') {
-          document.getElementById('studentForm').classList.add('hidden');
-          document.getElementById('adminForm').classList.remove('hidden');
-        }
-      });
-    </script>
 </body>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"></script>
+<script src="../js/register.js"></script>
 </html>
