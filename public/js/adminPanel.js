@@ -6,7 +6,12 @@ async function handleQrCodeGenerateFormSubmit(event) {
 
     try {
         const timeStamp = Date.now();
-        const response= await axios.post('/admin/qrcode', {courseId, section, timeStamp});
+        const locationRes =  await fetchLocation();
+        const location = {
+            latitude: locationRes.latitude,
+            longitude: locationRes.longitude
+        };
+        const response= await axios.post('/admin/qrcode', {courseId, section, timeStamp, location});
         const {message, data}= response.data;
         localStorage.setItem('generatedQR', data._id);
     
@@ -40,6 +45,25 @@ document.getElementById('actionSelect').addEventListener('change', function () {
             }
 }); 
 
+
+function fetchLocation() {
+    return new Promise((resolve, reject) => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    resolve({ latitude, longitude });
+                },
+                function (error) {
+                    reject('Error fetching geolocation: ' + error.message);
+                }
+            );
+        } else {
+            reject('Geolocation is not supported by this browser.');
+        }
+    });
+}
 
 function handleErrorMessage(error) {
     if (error.response) {

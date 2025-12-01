@@ -46,16 +46,12 @@ exports.getAdminPanel = async (req, res) => {
 // Generate and Save QR:
 exports.generateQrCode = async (req, res) => {
 
-  const { courseId, section, timeStamp } = req.body;
+  const { courseId, section, timeStamp, location } = req.body;
   const program = req.session.program;
   req.session.courseId = courseId;
   req.session.section = section;
 
-  const url = `https://api.ipapi.com/api/check?access_key=2e45fcc1ab9ff16293bae6c073b79842&fields=latitude,longitude`
-
-  const response = await fetch(url);
-  const location = await response.json();
-  console.log(`From Backend ${location.latitude}, ${location.longitude}`);
+  
 
 
   const text = `http://localhost:5000/student/updating?course_id=${courseId}&section=${section}&program=${program}&time=${timeStamp}&qrLatitude=${location.latitude}&qrLongitude=${location.longitude}`;

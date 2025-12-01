@@ -11,7 +11,7 @@ const Student = require("../models/Student");
 const Courses = require("../models/Courses");
 const Classes = require("../models/Classes");
 
-const thresholdDistance = 800000;
+const thresholdDistance = 100000;
 const CLASS_DURATION = 1 * 60 * 1000;   // 1 Minute
 
 
